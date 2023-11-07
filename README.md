@@ -25,7 +25,7 @@ This project is a simple console chat room application that allows multiple user
 
 5. ***Message Verification:*** To maintain a clean and orderly chat, each message must end with one of the following characters: '.', '!', or '?'. Messages are also limited to 64 characters with ASCII codes greater than or equal to 32.
 
-6. ***Save everything that happens in chat*** The server will display all the history(error messages and time when it happened) of the chat in the log.txt file.
+6. ***Save everything that happens in chat***: The server will display all the history(error messages and time when it happened) of the chat in the log.txt file.
 
 7. ***More Features:*** We are continuously working on adding more features to the chat room for enhanced convenience and functionality.
 
