@@ -19,7 +19,7 @@ This project is a simple console chat room application that allows multiple user
 
 2. ***Authorization:*** After registration, users are authorized and gain access to the chat room.
 
-3. ***Message History:*** The chat displays the last 10 messages, including those sent before the user's authorization. This helps users catch up on the conversation.
+3. ***Message History:*** The chat displays the last 'n' (You can choose how many you want. Use server_config file for this) messages, including those sent before the user's authorization. This helps users catch up on the conversation.
 
 4. ***Change Username:*** Users have the flexibility to change their login names. Other users will see the updates in real-time. (write
 
