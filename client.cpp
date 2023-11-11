@@ -10,9 +10,57 @@
 #include <sys/socket.h>
 #include <termios.h>
 #include <unistd.h>
+#include <fstream>
 #include "queue.h" //special queue for clients to write messages
 
 int clientSocket;
+
+//size of a all buffers
+int BufferSize;
+
+//Entered IP address
+const char* Ip_Address;
+
+void readConfig_File() {
+    std::ifstream config_data_reading("client_config.cfg");
+
+    if (!config_data_reading.is_open()) {
+        std::cerr << "Problems with config.cfg" << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(config_data_reading, line)) {
+        // ignoring the lines with comments
+        if (line.find("//") != std::string::npos) {
+            continue;
+        }
+
+        // looking for "=" in the line
+        size_t equalPos = line.find("=");
+        if (equalPos != std::string::npos) {
+            // get the variable name and its value
+            std::string variableName = line.substr(0, equalPos);
+            std::string valueStr = line.substr(equalPos + 1);
+
+            // remove the spaces at the beginning and at the end
+            variableName.erase(0, variableName.find_first_not_of(" \t\r\n"));
+            variableName.erase(variableName.find_last_not_of(" \t\r\n") + 1);
+            valueStr.erase(0, valueStr.find_first_not_of(" \t\r\n"));
+            valueStr.erase(valueStr.find_last_not_of(" \t\r\n") + 1);
+
+            // assign a value to a variable
+            if (variableName == "Ip_Address") {
+                Ip_Address = valueStr.c_str();
+            } else if (variableName == "BufferSize") {
+                BufferSize = std::stoi(valueStr);
+            }
+        }
+    }
+
+    config_data_reading.close();
+}
+
 
 // function to enable character input mode
 void enableMode() {
@@ -55,7 +103,7 @@ std::string sign_in_password(){
 
 
 void *receiveThread(void *arg) {
-    char buffer[100];
+    char buffer[BufferSize];
     while (true) {
         //get information from the server
         memset(buffer, 0, sizeof(buffer));
@@ -126,6 +174,9 @@ void Line_Checking(int clientSocket, std::string message){
 }
 
 int main() {
+
+    readConfig_File();
+
     struct sockaddr_in serverAddr;
 
     // create a socket
@@ -138,7 +189,7 @@ int main() {
     // set up the server address structure
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(2023);
-    serverAddr.sin_addr.s_addr = inet_addr("192.168.0.105");  // Your server's IP
+    serverAddr.sin_addr.s_addr = inet_addr(Ip_Address);  // Your server's IP
 
     // connect to the server
     if (connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
@@ -166,7 +217,7 @@ int main() {
 
     //allow the client to register in the chat room
     if (registration == "no"){
-        std::cout << std::endl << "㋡ Registration part:" << std::endl;
+        std::cout << std::endl << "Registration part:" << std::endl;
 
         std::string new_login;
         std::cout << "NEW_LOGIN:  ";
@@ -193,7 +244,7 @@ int main() {
         }
     }
     
-    char buffer[64]; //to get messages from the server
+    char buffer[BufferSize]; //to get messages from the server
     int num_of_tryings = 0; //the client must log on in 3 tries
 
     std::cout << std::endl;

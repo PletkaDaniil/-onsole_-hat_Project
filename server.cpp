@@ -22,6 +22,10 @@ struct Client {
     int number;     //number of the index in the list of logins
 };
 
+//size of a all buffers
+int BufferSize;
+//name of a file where me are going to save all logins and passwords
+std::string VaitalFile;
 // list of clients logins
 std::vector<std::string> logins;
 // list of clients passwords
@@ -31,14 +35,58 @@ std::map<std::string, bool> attendance;
 
 // list of connected clients
 std::vector<Client> clients;
-// chat history to store the last 10 messages
+// chat history to store the last number of "ChatHistorySize" messages
+int ChatHistorySize;
 std::vector<std::string> chatHistory;
+
+
+void readConfig_File() {
+    std::ifstream config_data_reading("server_config.cfg");
+
+    if (!config_data_reading.is_open()) {
+        std::cerr << "Problems with config.cfg" << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(config_data_reading, line)) {
+        // ignoring the lines with comments
+        if (line.find("//") != std::string::npos) {
+            continue;
+        }
+
+        // looking for "=" in the line
+        size_t equalPos = line.find("=");
+        if (equalPos != std::string::npos) {
+            // get the variable name and its value
+            std::string variableName = line.substr(0, equalPos);
+            std::string valueStr = line.substr(equalPos + 1);
+
+            // remove the spaces at the beginning and at the end
+            variableName.erase(0, variableName.find_first_not_of(" \t\r\n"));
+            variableName.erase(variableName.find_last_not_of(" \t\r\n") + 1);
+            valueStr.erase(0, valueStr.find_first_not_of(" \t\r\n"));
+            valueStr.erase(valueStr.find_last_not_of(" \t\r\n") + 1);
+
+            // assign a value to a variable
+            if (variableName == "ChatHistorySize") {
+                ChatHistorySize = std::stoi(valueStr);
+            } else if (variableName == "BufferSize") {
+                BufferSize = std::stoi(valueStr);
+            } else if (variableName == "VaitalFile") {
+                VaitalFile = valueStr;
+            }
+        }
+    }
+
+    config_data_reading.close();
+}
 
 // Get current date/time, format is DD-MM-YYYY.HH:mm:ss
 const std::string currentDateTime() {
     time_t now = time(0);
     struct tm tstruct;
-    char buf[50];
+    char buf[BufferSize];
     tstruct = *localtime(&now);
     strftime(buf, sizeof(buf), "%d-%m-%Y -- %X", &tstruct);
     std::string ans(buf);
@@ -46,30 +94,31 @@ const std::string currentDateTime() {
 }
 
 void saveChangesIntoFile(const std::string& login_before, const std::string& new_login){ //TODO
-    std::ifstream inputFile("sensitive_data.txt");
-    if (!inputFile.is_open()) {
-        std::cerr << "Problems with sensitive_data.txt" << std::endl;
+    std::ifstream input_file(VaitalFile);
+    if (!input_file.is_open()) {
+        std::cerr << "Problems with " << VaitalFile<< std::endl;
+        return;
     }
 
-    std::string fileContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
-    inputFile.close();
+    std::string fileContent((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
+    input_file.close();
 
     size_t found = fileContent.find(login_before);
     if (found != std::string::npos) {
         fileContent.replace(found, login_before.length(), new_login);
     }
-    inputFile.close();
+    input_file.close();
 
-    std::ofstream outputFile("sensitive_data.txt");
-    if (!inputFile.is_open()) {
-        std::cerr << "Problems with sensitive_data.txt" << std::endl;
+    std::ofstream output_file(VaitalFile);
+    if (!output_file.is_open()) {
+        std::cerr << "Problems with " << VaitalFile << std::endl;
     }
-    outputFile << fileContent;
-    outputFile.close();
+    output_file << fileContent;
+    output_file.close();
 }
 
 void handleClients(int clientId) {
-    char buffer[64];    //to get messages from the client
+    char buffer[BufferSize];    //to get messages from the client
 
     Client clientInfo;  
     clientInfo = clients[clientId]; //find client with the help of the ID
@@ -138,7 +187,7 @@ void handleClients(int clientId) {
 
                 // add the received message to the chat history
                 chatHistory.push_back(str);
-                if (chatHistory.size() > 10) {
+                if (chatHistory.size() > ChatHistorySize) {
                     chatHistory.erase(chatHistory.begin());
                 }
             } else {
@@ -169,7 +218,7 @@ void handleClients(int clientId) {
 
                 // add the received message to the chat history
                 chatHistory.push_back(to_send);
-                if (chatHistory.size() > 10) {
+                if (chatHistory.size() > ChatHistorySize) {
                     chatHistory.erase(chatHistory.begin());
                 }
 
@@ -186,6 +235,9 @@ void handleClients(int clientId) {
 
 
 int main() {
+
+    readConfig_File();
+
     int serverSocket, clientSocket;
     struct sockaddr_in serverAddr, clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
@@ -226,7 +278,7 @@ int main() {
     std::cout << "A server has been set up!" << std::endl;
     log_file << currentDateTime() << "  --  " << "A server has been set up!" << std::endl;
 
-    char buffer[64]; //to get messages from the client
+    char buffer[BufferSize]; //to get messages from the client
 
     int clientId = 0; //each client needs his/her own ID
     bool unsuccessfulAttempts; // needed to verify the client's authorization to the system
@@ -252,11 +304,11 @@ int main() {
             // Сhecking the information from the client whether he/she is registered or not 
             if (registration == "no"){
                 //open file for pre-recording
-                std::ofstream writing_into_the_file("sensitive_data.txt", std::ios::app);
+                std::ofstream writing_into_the_file(VaitalFile, std::ios::app);
 
                 //checking the servers file
                 if (!writing_into_the_file.is_open()) {
-                    std::cerr << "Problems with sensitive_data.txt" << std::endl;
+                    std::cerr << "Problems with " << VaitalFile << std::endl;
                     return 1;
                 }
 
@@ -286,10 +338,10 @@ int main() {
 
 
         // checking all logins and passwordsd (in the file)
-        std::ifstream reading_the_file("sensitive_data.txt"); //file for reading information
+        std::ifstream reading_the_file(VaitalFile); //file for reading information
         //checking the file
         if (!reading_the_file.is_open()) {
-            std::cerr << "Problems with sensitive_data.txt" << std::endl;
+            std::cerr << "Problems with " << VaitalFile << std::endl;
             return 1;
         }
         //on the first line goes login then on the second line client's password
@@ -313,6 +365,9 @@ int main() {
         }
         reading_the_file.close();//don't forget to close the file
 
+        for (int i = 0; i < logins.size(); ++i){
+            std::cout << logins[i] << "||||||" << passwords[i] << "|||||" << std::endl;
+        }
 
         int client_index = 0;
         while (true){
@@ -329,13 +384,12 @@ int main() {
                 break;
             } else {    //if everything is okey
                 std::string cur_line(buffer);
-
                 // Trim leading and trailing whitespace
                 cur_line.erase(cur_line.find_last_not_of(" \t\r\n") + 1);
                 cur_line.erase(0, cur_line.find_first_not_of(" \t\r\n"));
                 
                 //Go throw all logins. Here we try to find existing login
-                for (int index = 0; index < number_of_lines; ++index){
+                for (int index = 0; index < logins.size(); ++index){
                     if (logins[index] == cur_line){
                         login_checking = true;
                         if (attendance[logins[index]]){
