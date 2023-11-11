@@ -29,7 +29,7 @@ This project is a simple console chat room application that allows multiple user
 
 6. ***Save everything that happens in chat***: The server will display all the history(error messages and time when it happened) of the chat in the log.txt file.
 
-7. ***Work with configuration files***: You can change this in the configuration file depending on your needs
+7. ***Work with configuration files***: You can change anything in the configuration file depending on your needs
 
 8. ***More Features:*** We are continuously working on adding more features to the chat room for enhanced convenience and functionality.
 
