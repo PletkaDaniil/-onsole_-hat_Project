@@ -242,7 +242,7 @@ int main() {
     struct sockaddr_in serverAddr, clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
 
-    //checjing for errors
+    //checking for errors
     if (!log_file.is_open()) {
         std::cerr << "Can not open file log.txt" << std::endl;
         return 1;
@@ -294,7 +294,7 @@ int main() {
         }
 
 
-        //registration part. If the client want to be in the chat he/she must authorize
+        //registration part. If the client wants to be in the chat he/she must authorize
         memset(buffer, 0, sizeof(buffer));
         int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (bytesRead <= 0) { //checking for problemss from the client
@@ -364,10 +364,6 @@ int main() {
             ++number_of_lines;
         }
         reading_the_file.close();//don't forget to close the file
-
-        for (int i = 0; i < logins.size(); ++i){
-            std::cout << logins[i] << "||||||" << passwords[i] << "|||||" << std::endl;
-        }
 
         int client_index = 0;
         while (true){
