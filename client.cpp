@@ -89,7 +89,7 @@ std::string sign_in_password(){
         }else if (static_cast<int>(elem) == 8 || static_cast<int>(elem) == 127) { // 8 - Backspace 127 - Delete
             if (!password.empty()) {
                 password.pop_back();
-                std::cout << "\b \b"; // Удаляем символ с экрана
+                std::cout << "\b \b"; // Remove characters from terminal
             }
         }else{
             password += elem;
@@ -212,7 +212,7 @@ int main() {
         }
     }
     
-    //sen "yes" or "no" message to the server
+    //send "yes" or "no" message to the server
     send(clientSocket, registration.c_str(), registration.size(), 0);
 
     //allow the client to register in the chat room
