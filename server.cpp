@@ -25,7 +25,7 @@ struct Client {
 //size of a all buffers
 int BufferSize;
 //name of a file where me are going to save all logins and passwords
-std::string VaitalFile;
+std::string VitalFile;
 // list of clients logins
 std::vector<std::string> logins;
 // list of clients passwords
@@ -73,8 +73,8 @@ void readConfig_File() {
                 ChatHistorySize = std::stoi(valueStr);
             } else if (variableName == "BufferSize") {
                 BufferSize = std::stoi(valueStr);
-            } else if (variableName == "VaitalFile") {
-                VaitalFile = valueStr;
+            } else if (variableName == "VitalFile") {
+                VitalFile = valueStr;
             }
         }
     }
@@ -94,9 +94,9 @@ const std::string currentDateTime() {
 }
 
 void saveChangesIntoFile(const std::string& login_before, const std::string& new_login){ //TODO
-    std::ifstream input_file(VaitalFile);
+    std::ifstream input_file(VitalFile);
     if (!input_file.is_open()) {
-        std::cerr << "Problems with " << VaitalFile<< std::endl;
+        std::cerr << "Problems with " << VitalFile<< std::endl;
         return;
     }
 
@@ -109,9 +109,9 @@ void saveChangesIntoFile(const std::string& login_before, const std::string& new
     }
     input_file.close();
 
-    std::ofstream output_file(VaitalFile);
+    std::ofstream output_file(VitalFile);
     if (!output_file.is_open()) {
-        std::cerr << "Problems with " << VaitalFile << std::endl;
+        std::cerr << "Problems with " << VitalFile << std::endl;
     }
     output_file << fileContent;
     output_file.close();
@@ -304,11 +304,11 @@ int main() {
             // Сhecking the information from the client whether he/she is registered or not 
             if (registration == "no"){
                 //open file for pre-recording
-                std::ofstream writing_into_the_file(VaitalFile, std::ios::app);
+                std::ofstream writing_into_the_file(VitalFile, std::ios::app);
 
                 //checking the servers file
                 if (!writing_into_the_file.is_open()) {
-                    std::cerr << "Problems with " << VaitalFile << std::endl;
+                    std::cerr << "Problems with " << VitalFile << std::endl;
                     return 1;
                 }
 
@@ -338,10 +338,10 @@ int main() {
 
 
         // checking all logins and passwordsd (in the file)
-        std::ifstream reading_the_file(VaitalFile); //file for reading information
+        std::ifstream reading_the_file(VitalFile); //file for reading information
         //checking the file
         if (!reading_the_file.is_open()) {
-            std::cerr << "Problems with " << VaitalFile << std::endl;
+            std::cerr << "Problems with " << VitalFile << std::endl;
             return 1;
         }
         //on the first line goes login then on the second line client's password
